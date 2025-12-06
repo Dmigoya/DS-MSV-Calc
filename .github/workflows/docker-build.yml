@@ -355,16 +355,27 @@ jobs:
 
   cleanup:
     runs-on: ubuntu-latest
-    needs: [build, health-check]
-    if: always() && (needs.health-check.result == 'failure' || needs.health-check.result == 'cancelled')
+    needs: [build, health-check, security-scan]
+    if: always() && (needs.health-check.result == 'failure' || needs.health-check.result == 'cancelled' || needs.security-scan.result == 'failure' || needs.security-scan.result == 'cancelled')
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Eliminar imagen temporal (health-check falló)
+      - name: Eliminar imagen temporal (fallo en validaciones)
         run: |
-          echo "🧹 Limpiando imagen temporal porque el health-check falló o fue cancelado"
+          REASON=""
+          if [ "${{ needs.health-check.result }}" == "failure" ] || [ "${{ needs.health-check.result }}" == "cancelled" ]; then
+            REASON="health-check"
+          fi
+          if [ "${{ needs.security-scan.result }}" == "failure" ] || [ "${{ needs.security-scan.result }}" == "cancelled" ]; then
+            if [ -n "$REASON" ]; then
+              REASON="$REASON y security-scan"
+            else
+              REASON="security-scan"
+            fi
+          fi
+          echo "🧹 Limpiando imagen temporal porque $REASON falló o fue cancelado"
           
           # Obtener el ID de la versión del paquete usando el tag
           PACKAGE_NAME="${{ env.IMAGE_NAME }}"

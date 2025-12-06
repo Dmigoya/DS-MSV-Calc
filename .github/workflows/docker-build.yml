@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - Dockerización  # Permite probar el workflow en esta rama
-  workflow_dispatch:  # Permite ejecución manual desde cualquier rama
+  workflow_dispatch:
 
 env:
   IMAGE_NAME: calculadora-backend

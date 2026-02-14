@@ -1,4 +1,4 @@
-name: DORA lead time for changes
+name: DORA Lead Time for Changes
 
 on:
   workflow_dispatch:

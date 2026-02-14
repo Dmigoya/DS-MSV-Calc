@@ -1,19 +1,36 @@
 name: DORA Lead Time for Changes
 
+# 'workflow_dispatch' permite ejecutarlo manualmente desde la pestaña Actions
 on:
   workflow_dispatch:
 
 jobs:
-  test:
+  calculate-dora:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
-      pull-requests: read
-      artifact-metadata: read
+    name: Calculate DORA Metrics
+    
     steps:
-    - name: DORA lead time for changes
-      uses: DeveloperMetrics/lead-time-for-changes@v1.2.24
-      with:
-        workflows: 'CI'
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Importante para que pueda leer el historial de git
+
+      - name: Calculate Lead Time
+        uses: fwd/dora-lead-time-action@v1
+        with:
+          # El token se genera automáticamente, no necesitas crearlo
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           
+          # ⚠️ CAMBIA ESTO: Nombre del archivo .yml que hace el despliegue o build exitoso
+          # Si tu pipeline principal se llama "maven.yml", déjalo así.
+          workflows: 'docker-build.yml' 
+          
+          # Opcional: Ramas a considerar (por defecto suele ser main/master)
+          # branches: 'main'
+
+      # Paso opcional para ver los resultados en la consola de ejecución
+      - name: Print Results
+        run: |
+          echo "Lead Time Calculation Complete."
+          # La acción suele imprimir los resultados en el log del paso anterior,
+          # pero aquí podrías agregar scripts para enviar los datos a otro lado.
